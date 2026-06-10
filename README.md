@@ -1,6 +1,6 @@
 # Teensy 4.1 + MPR121 Touch Detection Project
 
-This project uses a Teensy 4.1 to read touch states from an MPR121 capacitive touch sensor, and outputs the touch results of MPR121 channels 0 and 1 on Teensy digital pins.
+This project uses a Teensy 4.1 to read touch states from an MPR121 capacitive touch sensor, and outputs the touch results of MPR121 channels 0 and 1 on Teensy digital pins. The current example enables 2 channels by default, but the code structure can be extended to support all 12 MPR121 touch channels.
 
 Current sketch file:
 
@@ -12,6 +12,7 @@ mpr121_teensy_touch/mpr121_teensy_touch.ino
 
 - Reads the MPR121 over I2C.
 - Detects the MPR121 E0 and E1 touch channels.
+- Enables 2 channels by default, but can be extended to 12 channels by changing the configuration and output mapping.
 - Prints touch and release events over Serial.
 - Outputs the E0 detection result on Teensy digital PIN1.
 - Outputs the E1 detection result on Teensy digital PIN2.
@@ -166,6 +167,33 @@ Meaning:
 - `RELEASE_THRESHOLD`: threshold for detecting release.
 - `ENABLE_DEBUG_OUTPUT`: whether to print Raw debug data.
 - `ENABLE_TOUCH_MASK_OUTPUT`: whether to print the touched mask summary.
+
+## Extending to 12 Channels
+
+The MPR121 supports up to 12 touch channels, from E0 to E11. The current code only enables E0 and E1 to match the actual needs of this project:
+
+```cpp
+constexpr uint8_t ELECTRODE_COUNT = 2;
+```
+
+To detect all 12 channels, change it to:
+
+```cpp
+constexpr uint8_t ELECTRODE_COUNT = 12;
+```
+
+After this change, `calibrateSoftwareBaseline()`, `readSoftwareTouched()`, Raw debug output, and touched mask output will loop over all 12 channels.
+
+Note that only E0 and E1 are currently mapped to Teensy digital output pins:
+
+```cpp
+constexpr uint8_t CHANNEL_0_OUTPUT_PIN = 1;
+constexpr uint8_t CHANNEL_1_OUTPUT_PIN = 2;
+```
+
+If you want E2 through E11 to also drive Teensy digital output pins, add more output pin configuration values and extend the `updateTouchOutputPins()` function.
+
+Also, different channels may have different electrode areas, wire lengths, and mounting conditions. After extending to 12 channels, per-channel thresholds are recommended instead of using one shared `TOUCH_THRESHOLD` for every channel.
 
 ## Debugging
 
